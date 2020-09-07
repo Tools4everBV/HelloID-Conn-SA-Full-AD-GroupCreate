@@ -1,0 +1,194 @@
+[
+    {
+      "label": "Details",
+      "fields": [
+        {
+          "key": "name",
+          "templateOptions": {
+            "label": "Name",
+            "required": true,
+            "minLength": 5,
+            "pattern": "^[A-Za-z0-9._-]{6,50}$"
+          },
+          "validation": {
+            "messages": {
+              "pattern": "Allowed characters: a-z 0-9 . _ - \nMinimal 6, maximum 50 characters"
+            }
+          },
+          "type": "input",
+          "summaryVisibility": "Hide element",
+          "requiresTemplateOptions": true
+        },
+        {
+          "key": "description",
+          "templateOptions": {
+            "label": "Description"
+          },
+          "type": "input",
+          "summaryVisibility": "Show",
+          "requiresTemplateOptions": true
+        },
+        {
+          "key": "groupScope",
+          "templateOptions": {
+            "label": "Group scope",
+            "useObjects": true,
+            "options": [
+              {
+                "value": "DomainLocal",
+                "label": "Domain local"
+              },
+              {
+                "value": "Global",
+                "label": "Global"
+              },
+              {
+                "value": "Universal",
+                "label": "Universal"
+              }
+            ],
+            "required": true
+          },
+          "type": "radio",
+          "summaryVisibility": "Show",
+          "textOrLabel": "label",
+          "requiresTemplateOptions": true
+        },
+        {
+          "key": "groupType",
+          "templateOptions": {
+            "label": "Group type",
+            "useObjects": true,
+            "options": [
+              {
+                "value": "Security",
+                "label": "Security"
+              },
+              {
+                "value": "Distribution",
+                "label": "Distribution"
+              }
+            ],
+            "required": true
+          },
+          "type": "radio",
+          "summaryVisibility": "Show",
+          "textOrLabel": "label",
+          "requiresTemplateOptions": true
+        },
+        {
+          "key": "email",
+          "templateOptions": {
+            "label": "Email",
+            "pattern": "(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|\"(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21\\x23-\\x5b\\x5d-\\x7f]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])*\")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21-\\x5a\\x53-\\x7f]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])+)\\])"
+          },
+          "validation": {
+            "messages": {
+              "pattern": "Invalid email address"
+            }
+          },
+          "hideExpression": "model[\"groupType\"]!=='Distribution'",
+          "type": "email",
+          "summaryVisibility": "Hide element",
+          "requiresTemplateOptions": true
+        },
+        {
+          "key": "manager",
+          "templateOptions": {
+            "label": "AD group manager",
+            "required": false,
+            "grid": {
+              "columns": [
+                {
+                  "headerName": "DisplayName",
+                  "field": "displayName"
+                },
+                {
+                  "headerName": "UserPrincipalName",
+                  "field": "UserPrincipalName"
+                },
+                {
+                  "headerName": "Department",
+                  "field": "Department"
+                },
+                {
+                  "headerName": "Title",
+                  "field": "Title"
+                },
+                {
+                  "headerName": "Description",
+                  "field": "Description"
+                }
+              ],
+              "height": 300,
+              "rowSelection": "single"
+            },
+            "dataSourceConfig": {
+              "dataSourceGuid": "9309d71c-f738-4778-84bd-08d7612f73b6",
+              "input": {
+                "propertyInputs": []
+              },
+              "filter": {
+                "propertyInputs": []
+              }
+            },
+            "useFilter": true
+          },
+          "type": "grid",
+          "summaryVisibility": "Show",
+          "requiresTemplateOptions": true
+        }
+      ]
+    },
+    {
+      "label": "Naming",
+      "fields": [
+        {
+          "key": "naming",
+          "templateOptions": {
+            "label": "Naming convention",
+            "required": true,
+            "grid": {
+              "columns": [
+                {
+                  "headerName": "Name",
+                  "field": "name"
+                },
+                {
+                  "headerName": "Email",
+                  "field": "email"
+                }
+              ],
+              "height": 300,
+              "rowSelection": "single"
+            },
+            "dataSourceConfig": {
+              "dataSourceGuid": "9ab5e21f-4cc2-4521-1000-08d78857c3bd",
+              "input": {
+                "propertyInputs": [
+                  {
+                    "propertyName": "inputEmail",
+                    "otherFieldValue": {
+                      "otherFieldKey": "email"
+                    }
+                  },
+                  {
+                    "propertyName": "inputName",
+                    "otherFieldValue": {
+                      "otherFieldKey": "name"
+                    }
+                  }
+                ]
+              },
+              "filter": {
+                "propertyInputs": []
+              }
+            }
+          },
+          "type": "grid",
+          "summaryVisibility": "Show",
+          "requiresTemplateOptions": true
+        }
+      ]
+    }
+  ]
