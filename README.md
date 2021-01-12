@@ -32,6 +32,7 @@ After the all-in-one PowerShell script has run and created all the required reso
 <table>
   <tr><td><strong>Variable name</strong></td><td><strong>Example value</strong></td><td><strong>Description</strong></td></tr>
   <tr><td>ADusersSearchOU</td><td>[{ "OU": "OU=Disabled Users,OU=HelloID Training,DC=veeken,DC=local"},{ "OU": "OU=Users,OU=HelloID Training,DC=veeken,DC=local"},{"OU": "OU=External,OU=HelloID Training,DC=veeken,DC=local"}]</td><td>Array of Active Directory OUs for scoping AD user accounts as manager of the new AD group</td></tr>
+  <tr><td>ADgroupsCreateOU</td><td>OU=Groups,OU=HelloID Training,DC=veeken,DC=local</td><td>String value of Active Directory OU to create new AD groups</td></tr>
 </table>
 
 ## Manual resources
