@@ -3,7 +3,7 @@ $script:PortalBaseUrl = "https://CUSTOMER.helloid.com"
 $apiKey = "API_KEY"
 $apiSecret = "API_SECRET"
 $delegatedFormAccessGroupNames = @("Users", "HID_administrators")
-$delegatedFormCategories = @("Active Directory", "Group Management")
+$delegatedFormCategories = @("Active Directory", "User Management")
 
 # Create authorization headers with HelloID API key
 $pair = "$apiKey" + ":" + "$apiSecret"
@@ -259,6 +259,10 @@ function Invoke-HelloIDDelegatedForm {
 }
 <# Begin: HelloID Global Variables #>
 $tmpValue = @'
+OU=Groups,OU=HelloID Training,DC=veeken,DC=local
+'@ 
+Invoke-HelloIDGlobalVariable -Name "ADgroupsCreateOU" -Value $tmpValue -Secret "False" 
+$tmpValue = @'
 [{ "OU": "OU=Disabled Users,OU=HelloID Training,DC=veeken,DC=local"},{ "OU": "OU=Users,OU=HelloID Training,DC=veeken,DC=local"},{"OU": "OU=External,OU=HelloID Training,DC=veeken,DC=local"}]
 '@ 
 Invoke-HelloIDGlobalVariable -Name "ADusersSearchOU" -Value $tmpValue -Secret "False" 
@@ -458,7 +462,7 @@ try {
         GroupCategory  = $groupType 
         GroupScope     = $groupScope
         Description    = $description
-        Path           = $createOU
+        Path           = $ADgroupsCreateOU
     }
     
     if($manager -ne "") {
@@ -481,7 +485,7 @@ try {
 '@; 
 
 	$tmpVariables = @'
-[{"name":"createOU","value":"{{variable.ADgroupsCreateOU}}","secret":false,"typeConstraint":"string"},{"name":"description","value":"{{form.description}}","secret":false,"typeConstraint":"string"},{"name":"email","value":"{{form.naming.email}}","secret":false,"typeConstraint":"string"},{"name":"groupScope","value":"{{form.groupScope}}","secret":false,"typeConstraint":"string"},{"name":"groupType","value":"{{form.groupType}}","secret":false,"typeConstraint":"string"},{"name":"manager","value":"{{form.manager.UserPrincipalName}}","secret":false,"typeConstraint":"string"},{"name":"name","value":"{{form.naming.name}}","secret":false,"typeConstraint":"string"}]
+[{"name":"description","value":"{{form.description}}","secret":false,"typeConstraint":"string"},{"name":"email","value":"{{form.naming.email}}","secret":false,"typeConstraint":"string"},{"name":"groupScope","value":"{{form.groupScope}}","secret":false,"typeConstraint":"string"},{"name":"groupType","value":"{{form.groupType}}","secret":false,"typeConstraint":"string"},{"name":"manager","value":"{{form.manager.UserPrincipalName}}","secret":false,"typeConstraint":"string"},{"name":"name","value":"{{form.naming.name}}","secret":false,"typeConstraint":"string"}]
 '@ 
 
 	$delegatedFormTaskGuid = [PSCustomObject]@{} 
