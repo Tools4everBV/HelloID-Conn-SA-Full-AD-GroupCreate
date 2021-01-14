@@ -354,7 +354,7 @@ $tmpInput = @'
 [{"description":null,"translateDescription":false,"inputFieldType":1,"key":"inputName","type":0,"options":1},{"description":null,"translateDescription":false,"inputFieldType":1,"key":"inputEmail","type":0,"options":0}]
 '@ 
 $dataSourceGuid_1 = [PSCustomObject]@{} 
-Invoke-HelloIDDatasource -DatasourceName "AD-group-create-check-names" -DatasourceType "4" -DatasourceInput $tmpInput -DatasourcePsScript -$tmpPsScript -DatasourceModel $tmpModel -returnObject ([Ref]$dataSourceGuid_1) 
+Invoke-HelloIDDatasource -DatasourceName "AD-group-create-check-names" -DatasourceType "4" -DatasourceInput $tmpInput -DatasourcePsScript $tmpPsScript -DatasourceModel $tmpModel -returnObject ([Ref]$dataSourceGuid_1) 
 <# End: DataSource "AD-group-create-check-names" #>
 
 <# Begin: DataSource "AD-user-generate-table" #>
@@ -390,7 +390,7 @@ $tmpInput = @'
 
 '@ 
 $dataSourceGuid_0 = [PSCustomObject]@{} 
-Invoke-HelloIDDatasource -DatasourceName "AD-user-generate-table" -DatasourceType "4" -DatasourceInput $tmpInput -DatasourcePsScript -$tmpPsScript -DatasourceModel $tmpModel -returnObject ([Ref]$dataSourceGuid_0) 
+Invoke-HelloIDDatasource -DatasourceName "AD-user-generate-table" -DatasourceType "4" -DatasourceInput $tmpInput -DatasourcePsScript $tmpPsScript -DatasourceModel $tmpModel -returnObject ([Ref]$dataSourceGuid_0) 
 <# End: DataSource "AD-user-generate-table" #>
 <# End: HelloID Data sources #>
 
