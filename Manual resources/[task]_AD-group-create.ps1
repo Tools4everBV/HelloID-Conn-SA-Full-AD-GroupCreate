@@ -6,7 +6,7 @@ try {
         GroupCategory  = $groupType 
         GroupScope     = $groupScope
         Description    = $description
-        Path           = $createOU
+        Path           = $ADgroupsCreateOU
     }
     
     if($manager -ne "") {
