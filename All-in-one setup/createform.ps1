@@ -3,7 +3,7 @@ $script:PortalBaseUrl = "https://CUSTOMER.helloid.com"
 $apiKey = "API_KEY"
 $apiSecret = "API_SECRET"
 $delegatedFormAccessGroupNames = @("Users", "HID_administrators")
-$delegatedFormCategories = @("Active Directory", "User Management")
+$delegatedFormCategories = @("Active Directory", "Group Management")
 
 # Create authorization headers with HelloID API key
 $pair = "$apiKey" + ":" + "$apiSecret"
