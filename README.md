@@ -38,8 +38,8 @@ After the all-in-one PowerShell script has run and created all the required reso
 ## Manual resources
 This Delegated Form uses the following resources in order to run
 
-### Powershell data source 'AD-user-generate-table'
-This Powershell data source runs an Active Directory query to search for AD user accounts. It uses an array of Active Directory OU's specified as HelloID user defined variable named _"ADusersSearchOU"_ to specify the search scope.
+### Powershell data source 'AD-user-generate-table-groupmanagers'
+This Powershell data source runs an Active Directory query to search for "manager" AD user accounts. It uses an array of Active Directory OU's specified as HelloID user defined variable named _"ADusersSearchOU"_ to specify the search scope. It uses an optional input called _"selectedGroup"_ to default select the current group manager in the returned data
 
 ### Powershell data source 'AD-group-create-check-names'
 This Powershell data source runs an Active Directory query to return the available group name and email address based on the configured naming convention.  
