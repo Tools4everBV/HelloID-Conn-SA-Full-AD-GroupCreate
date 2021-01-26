@@ -46,7 +46,7 @@ function Invoke-HelloIDGlobalVariable {
                 secret   = $Secret;
                 ItemType = 0;
             }    
-            $body = $body | ConvertTo-Json
+            $body = ConvertTo-Json -InputObject $body
     
             $uri = ($script:PortalBaseUrl + "api/v1/automation/variable")
             $response = Invoke-RestMethod -Method Post -Uri $uri -Headers $script:headers -ContentType "application/json" -Verbose:$false -Body $body
@@ -90,7 +90,7 @@ function Invoke-HelloIDAutomationTask {
                 objectGuid          = $ObjectGuid;
                 variables           = [Object[]]($Variables | ConvertFrom-Json);
             }
-            $body = $body | ConvertTo-Json
+            $body = ConvertTo-Json -InputObject $body
     
             $uri = ($script:PortalBaseUrl +"api/v1/automationtasks/powershell")
             $response = Invoke-RestMethod -Method Post -Uri $uri -Headers $script:headers -ContentType "application/json" -Verbose:$false -Body $body
@@ -143,7 +143,7 @@ function Invoke-HelloIDDatasource {
                 script             = $DatasourcePsScript;
                 input              = [Object[]]($DatasourceInput | ConvertFrom-Json);
             }
-            $body = $body | ConvertTo-Json
+            $body = ConvertTo-Json -InputObject $body
       
             $uri = ($script:PortalBaseUrl +"api/v1/datasource")
             $response = Invoke-RestMethod -Method Post -Uri $uri -Headers $script:headers -ContentType "application/json" -Verbose:$false -Body $body
@@ -181,9 +181,9 @@ function Invoke-HelloIDDynamicForm {
             #Create Dynamic form
             $body = @{
                 Name       = $FormName;
-                FormSchema = $FormSchema
+                FormSchema = [Object[]]($FormSchema | ConvertFrom-Json)
             }
-            $body = $body | ConvertTo-Json
+            $body = ConvertTo-Json -InputObject $body -Depth 100
     
             $uri = ($script:PortalBaseUrl +"api/v1/forms")
             $response = Invoke-RestMethod -Method Post -Uri $uri -Headers $script:headers -ContentType "application/json" -Verbose:$false -Body $body
@@ -232,7 +232,7 @@ function Invoke-HelloIDDelegatedForm {
                 useFaIcon       = $UseFaIcon;
                 faIcon          = $FaIcon;
             }    
-            $body = $body | ConvertTo-Json
+            $body = ConvertTo-Json -InputObject $body
     
             $uri = ($script:PortalBaseUrl +"api/v1/delegatedforms")
             $response = Invoke-RestMethod -Method Post -Uri $uri -Headers $script:headers -ContentType "application/json" -Verbose:$false -Body $body
@@ -261,11 +261,17 @@ function Invoke-HelloIDDelegatedForm {
 $tmpValue = @'
 OU=Groups,OU=HelloID Training,DC=veeken,DC=local
 '@ 
-Invoke-HelloIDGlobalVariable -Name "ADgroupsCreateOU" -Value $tmpValue -Secret "False" 
+$tmpName = @'
+ADgroupsCreateOU
+'@ 
+Invoke-HelloIDGlobalVariable -Name $tmpName -Value $tmpValue -Secret "False" 
 $tmpValue = @'
 [{ "OU": "OU=Disabled Users,OU=HelloID Training,DC=veeken,DC=local"},{ "OU": "OU=Users,OU=HelloID Training,DC=veeken,DC=local"},{"OU": "OU=External,OU=HelloID Training,DC=veeken,DC=local"}]
 '@ 
-Invoke-HelloIDGlobalVariable -Name "ADusersSearchOU" -Value $tmpValue -Secret "False" 
+$tmpName = @'
+ADusersSearchOU
+'@ 
+Invoke-HelloIDGlobalVariable -Name $tmpName -Value $tmpValue -Secret "False" 
 <# End: HelloID Global Variables #>
 
 
@@ -354,18 +360,29 @@ $tmpInput = @'
 [{"description":null,"translateDescription":false,"inputFieldType":1,"key":"inputName","type":0,"options":1},{"description":null,"translateDescription":false,"inputFieldType":1,"key":"inputEmail","type":0,"options":0}]
 '@ 
 $dataSourceGuid_1 = [PSCustomObject]@{} 
-Invoke-HelloIDDatasource -DatasourceName "AD-group-create-check-names" -DatasourceType "4" -DatasourceInput $tmpInput -DatasourcePsScript $tmpPsScript -DatasourceModel $tmpModel -returnObject ([Ref]$dataSourceGuid_1) 
+$dataSourceGuid_1_Name = @'
+AD-group-create-check-names
+'@ 
+Invoke-HelloIDDatasource -DatasourceName $dataSourceGuid_1_Name -DatasourceType "4" -DatasourceInput $tmpInput -DatasourcePsScript $tmpPsScript -DatasourceModel $tmpModel -returnObject ([Ref]$dataSourceGuid_1) 
 <# End: DataSource "AD-group-create-check-names" #>
 
-<# Begin: DataSource "AD-user-generate-table" #>
+<# Begin: DataSource "AD-user-generate-table-groupmanagers" #>
 $tmpPsScript = @'
 try {
     $searchOUs = $ADusersSearchOU
+    $groupName = $datasource.selectedGroup.Name
+    
+    $currentManager = ""    
+    if([String]::IsNullOrEmpty($groupName) -eq $false){
+        $selectedGroup = Get-ADgroup -Filter { Name -eq $groupName } -Properties managedBy
+        $currentManager = $selectedGroup.managedBy
+    }
+
     Write-Information "SearchBase: $searchOUs"
         
     $ous = $searchOUs | ConvertFrom-Json
     $users = foreach($item in $ous) {
-        Get-ADUser -Filter {Name -like "*"} -SearchBase $item.ou -properties SamAccountName, displayName, UserPrincipalName, Description, company, Department, Title
+        Get-ADUser -Filter {Name -like "*"} -SearchBase $item.ou -properties DistinguishedName, SamAccountName, displayName, UserPrincipalName, Description, company, Department, Title
     }
         
     $users = $users | Sort-Object -Property DisplayName
@@ -374,7 +391,7 @@ try {
         
     if($resultCount -gt 0){
         foreach($user in $users){
-            $returnObject = @{SamAccountName=$user.SamAccountName; displayName=$user.displayName; UserPrincipalName=$user.UserPrincipalName; Description=$user.Description; Company=$user.company; Department=$user.Department; Title=$user.Title;}
+            $returnObject = @{SamAccountName=$user.SamAccountName; displayName=$user.displayName; UserPrincipalName=$user.UserPrincipalName; Description=$user.Description; Company=$user.company; Department=$user.Department; Title=$user.Title; selected = ($user.DistinguishedName -eq $currentManager)}
             Write-Output $returnObject
         }
     }
@@ -384,23 +401,29 @@ try {
 }
 '@ 
 $tmpModel = @'
-[{"key":"SamAccountName","type":0},{"key":"Title","type":0},{"key":"Description","type":0},{"key":"Company","type":0},{"key":"Department","type":0},{"key":"displayName","type":0},{"key":"UserPrincipalName","type":0}]
+[{"key":"SamAccountName","type":0},{"key":"Title","type":0},{"key":"Description","type":0},{"key":"Company","type":0},{"key":"Department","type":0},{"key":"displayName","type":0},{"key":"UserPrincipalName","type":0},{"key":"selected","type":0}]
 '@ 
 $tmpInput = @'
-
+[{"description":null,"translateDescription":false,"inputFieldType":1,"key":"selectedGroup","type":0,"options":0}]
 '@ 
 $dataSourceGuid_0 = [PSCustomObject]@{} 
-Invoke-HelloIDDatasource -DatasourceName "AD-user-generate-table" -DatasourceType "4" -DatasourceInput $tmpInput -DatasourcePsScript $tmpPsScript -DatasourceModel $tmpModel -returnObject ([Ref]$dataSourceGuid_0) 
-<# End: DataSource "AD-user-generate-table" #>
+$dataSourceGuid_0_Name = @'
+AD-user-generate-table-groupmanagers
+'@ 
+Invoke-HelloIDDatasource -DatasourceName $dataSourceGuid_0_Name -DatasourceType "4" -DatasourceInput $tmpInput -DatasourcePsScript $tmpPsScript -DatasourceModel $tmpModel -returnObject ([Ref]$dataSourceGuid_0) 
+<# End: DataSource "AD-user-generate-table-groupmanagers" #>
 <# End: HelloID Data sources #>
 
 <# Begin: Dynamic Form "AD Group - Create" #>
 $tmpSchema = @"
-[{"label":"Details","fields":[{"key":"name","templateOptions":{"label":"Name","required":true,"minLength":5,"pattern":"^[A-Za-z0-9._-]{6,50}$"},"validation":{"messages":{"pattern":"Allowed characters: a-z 0-9 . _ - \nMinimal 6, maximum 50 characters"}},"type":"input","summaryVisibility":"Hide element","requiresTemplateOptions":true},{"key":"description","templateOptions":{"label":"Description"},"type":"input","summaryVisibility":"Show","requiresTemplateOptions":true},{"key":"formRow","templateOptions":{},"fieldGroup":[{"key":"groupScope","templateOptions":{"label":"Group scope","useObjects":true,"options":[{"value":"DomainLocal","label":"Domain local"},{"value":"Global","label":"Global"},{"value":"Universal","label":"Universal"}],"required":true},"type":"radio","summaryVisibility":"Show","textOrLabel":"label","requiresTemplateOptions":true},{"key":"groupType","templateOptions":{"label":"Group type","useObjects":true,"options":[{"value":"Security","label":"Security"},{"value":"Distribution","label":"Distribution"}],"required":true},"type":"radio","summaryVisibility":"Show","textOrLabel":"label","requiresTemplateOptions":true}],"type":"formrow","requiresTemplateOptions":true},{"key":"email","templateOptions":{"label":"Email","pattern":"(?:[a-z0-9!#$%\u0026\u0027*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%\u0026\u0027*+/=?^_`{|}~-]+)*|\"(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21\\x23-\\x5b\\x5d-\\x7f]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])*\")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21-\\x5a\\x53-\\x7f]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])+)\\])"},"validation":{"messages":{"pattern":"Invalid email address"}},"hideExpression":"model\[\\"groupType\\"]!==\u0027Distribution\u0027","type":"email","summaryVisibility":"Hide element","requiresTemplateOptions":true},{"key":"manager","templateOptions":{"label":"AD group manager","required":false,"grid":{"columns":[{"headerName":"DisplayName","field":"displayName"},{"headerName":"UserPrincipalName","field":"UserPrincipalName"},{"headerName":"Department","field":"Department"},{"headerName":"Title","field":"Title"},{"headerName":"Description","field":"Description"}],"height":300,"rowSelection":"single"},"dataSourceConfig":{"dataSourceGuid":"$dataSourceGuid_0","input":{"propertyInputs":[]}},"useFilter":true},"type":"grid","summaryVisibility":"Show","requiresTemplateOptions":true}]},{"label":"Naming","fields":[{"key":"naming","templateOptions":{"label":"Naming convention","required":true,"grid":{"columns":[{"headerName":"Name","field":"name"},{"headerName":"Email","field":"email"}],"height":300,"rowSelection":"single"},"dataSourceConfig":{"dataSourceGuid":"$dataSourceGuid_1","input":{"propertyInputs":[{"propertyName":"inputName","otherFieldValue":{"otherFieldKey":"name"}},{"propertyName":"inputEmail","otherFieldValue":{"otherFieldKey":"email"}}]}},"useFilter":false},"type":"grid","summaryVisibility":"Show","requiresTemplateOptions":true}]}]
+[{"label":"Details","fields":[{"key":"name","templateOptions":{"label":"Name","required":true,"minLength":5,"pattern":"^[A-Za-z0-9._-]{6,50}$"},"validation":{"messages":{"pattern":"Allowed characters: a-z 0-9 . _ - \nMinimal 6, maximum 50 characters"}},"type":"input","summaryVisibility":"Hide element","requiresTemplateOptions":true},{"key":"description","templateOptions":{"label":"Description"},"type":"input","summaryVisibility":"Show","requiresTemplateOptions":true},{"key":"formRow","templateOptions":{},"fieldGroup":[{"key":"groupScope","templateOptions":{"label":"Group scope","useObjects":true,"options":[{"value":"DomainLocal","label":"Domain local"},{"value":"Global","label":"Global"},{"value":"Universal","label":"Universal"}],"required":true},"type":"radio","summaryVisibility":"Show","textOrLabel":"label","requiresTemplateOptions":true},{"key":"groupType","templateOptions":{"label":"Group type","useObjects":true,"options":[{"value":"Security","label":"Security"},{"value":"Distribution","label":"Distribution"}],"required":true},"type":"radio","summaryVisibility":"Show","textOrLabel":"label","requiresTemplateOptions":true}],"type":"formrow","requiresTemplateOptions":true},{"key":"email","templateOptions":{"label":"Email","pattern":"(?:[a-z0-9!#$%\u0026\u0027*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%\u0026\u0027*+/=?^_`{|}~-]+)*|\"(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21\\x23-\\x5b\\x5d-\\x7f]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])*\")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21-\\x5a\\x53-\\x7f]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])+)\\])"},"validation":{"messages":{"pattern":"Invalid email address"}},"hideExpression":"model[\"groupType\"]!==\u0027Distribution\u0027","type":"email","summaryVisibility":"Hide element","requiresTemplateOptions":true},{"key":"manager","templateOptions":{"label":"AD group manager","required":false,"grid":{"columns":[{"headerName":"DisplayName","field":"displayName"},{"headerName":"UserPrincipalName","field":"UserPrincipalName"},{"headerName":"Department","field":"Department"},{"headerName":"Title","field":"Title"},{"headerName":"Description","field":"Description"}],"height":300,"rowSelection":"single"},"dataSourceConfig":{"dataSourceGuid":"$dataSourceGuid_0","input":{"propertyInputs":[]}},"useFilter":true},"type":"grid","summaryVisibility":"Show","requiresTemplateOptions":true}]},{"label":"Naming","fields":[{"key":"naming","templateOptions":{"label":"Naming convention","required":true,"grid":{"columns":[{"headerName":"Name","field":"name"},{"headerName":"Email","field":"email"}],"height":300,"rowSelection":"single"},"dataSourceConfig":{"dataSourceGuid":"$dataSourceGuid_1","input":{"propertyInputs":[{"propertyName":"inputName","otherFieldValue":{"otherFieldKey":"name"}},{"propertyName":"inputEmail","otherFieldValue":{"otherFieldKey":"email"}}]}},"useFilter":false},"type":"grid","summaryVisibility":"Show","requiresTemplateOptions":true}]}]
 "@ 
 
 $dynamicFormGuid = [PSCustomObject]@{} 
-Invoke-HelloIDDynamicForm -FormName "AD Group - Create" -FormSchema $tmpSchema  -returnObject ([Ref]$dynamicFormGuid) 
+$dynamicFormName = @'
+AD Group - Create
+'@ 
+Invoke-HelloIDDynamicForm -FormName $dynamicFormName -FormSchema $tmpSchema  -returnObject ([Ref]$dynamicFormGuid) 
 <# END: Dynamic Form #>
 
 <# Begin: Delegated Form Access Groups and Categories #>
@@ -417,7 +440,7 @@ foreach($group in $delegatedFormAccessGroupNames) {
         Write-ColorOutput Red "HelloID (access)group '$group', message: $_"
     }
 }
-$delegatedFormAccessGroupGuids = ($delegatedFormAccessGroupGuids | ConvertTo-Json -Compress)
+$delegatedFormAccessGroupGuids = (ConvertTo-Json -InputObject $delegatedFormAccessGroupGuids -Compress)
 
 $delegatedFormCategoryGuids = @()
 foreach($category in $delegatedFormCategories) {
@@ -433,7 +456,7 @@ foreach($category in $delegatedFormCategories) {
         $body = @{
             name = @{"en" = $category};
         }
-        $body = $body | ConvertTo-Json
+        $body = ConvertTo-Json -InputObject $body
 
         $uri = ($script:PortalBaseUrl +"api/v1/delegatedformcategories")
         $response = Invoke-RestMethod -Method Post -Uri $uri -Headers $script:headers -ContentType "application/json" -Verbose:$false -Body $body
@@ -443,12 +466,15 @@ foreach($category in $delegatedFormCategories) {
         Write-ColorOutput Green "HelloID Delegated Form category '$category' successfully created: $tmpGuid"
     }
 }
-$delegatedFormCategoryGuids = ($delegatedFormCategoryGuids | ConvertTo-Json -Compress)
+$delegatedFormCategoryGuids = (ConvertTo-Json -InputObject $delegatedFormCategoryGuids -Compress)
 <# End: Delegated Form Access Groups and Categories #>
 
 <# Begin: Delegated Form #>
 $delegatedFormRef = [PSCustomObject]@{guid = $null; created = $null} 
-Invoke-HelloIDDelegatedForm -DelegatedFormName "AD Group - Create" -DynamicFormGuid $dynamicFormGuid -AccessGroups $delegatedFormAccessGroupGuids -Categories $delegatedFormCategoryGuids -UseFaIcon "True" -FaIcon "fa fa-plus" -returnObject ([Ref]$delegatedFormRef) 
+$delegatedFormName = @'
+AD Group - Create
+'@
+Invoke-HelloIDDelegatedForm -DelegatedFormName $delegatedFormName -DynamicFormGuid $dynamicFormGuid -AccessGroups $delegatedFormAccessGroupGuids -Categories $delegatedFormCategoryGuids -UseFaIcon "True" -FaIcon "fa fa-plus" -returnObject ([Ref]$delegatedFormRef) 
 <# End: Delegated Form #>
 
 <# Begin: Delegated Form Task #>
@@ -489,8 +515,11 @@ try {
 '@ 
 
 	$delegatedFormTaskGuid = [PSCustomObject]@{} 
-	Invoke-HelloIDAutomationTask -TaskName "AD-group-create" -UseTemplate "False" -AutomationContainer "8" -Variables $tmpVariables -PowershellScript $tmpScript -ObjectGuid $delegatedFormRef.guid -ForceCreateTask $true -returnObject ([Ref]$delegatedFormTaskGuid) 
+$delegatedFormTaskName = @'
+AD-group-create
+'@
+	Invoke-HelloIDAutomationTask -TaskName $delegatedFormTaskName -UseTemplate "False" -AutomationContainer "8" -Variables $tmpVariables -PowershellScript $tmpScript -ObjectGuid $delegatedFormRef.guid -ForceCreateTask $true -returnObject ([Ref]$delegatedFormTaskGuid) 
 } else {
-	Write-ColorOutput Yellow "Delegated form 'AD Group - Create' already exists. Nothing to do with the Delegated Form task..." 
+	Write-ColorOutput Yellow "Delegated form '$delegatedFormName' already exists. Nothing to do with the Delegated Form task..." 
 }
 <# End: Delegated Form Task #>
