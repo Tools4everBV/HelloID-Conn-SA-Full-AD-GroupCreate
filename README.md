@@ -31,18 +31,14 @@ After the all-in-one PowerShell script has run and created all the required reso
  1. Update the following [user defined variables](https://docs.helloid.com/hc/en-us/articles/360014169933-How-to-Create-and-Manage-User-Defined-Variables)
 <table>
   <tr><td><strong>Variable name</strong></td><td><strong>Example value</strong></td><td><strong>Description</strong></td></tr>
-  <tr><td>ADusersSearchOU</td><td>[{ "OU": "OU=Disabled Users,OU=HelloID Training,DC=veeken,DC=local"},{ "OU": "OU=Users,OU=HelloID Training,DC=veeken,DC=local"},{"OU": "OU=External,OU=HelloID Training,DC=veeken,DC=local"}]</td><td>Array of Active Directory OUs for scoping AD user accounts as manager of the new AD group</td></tr>
-  <tr><td>ADgroupsCreateOU</td><td>OU=Groups,OU=HelloID Training,DC=veeken,DC=local</td><td>String value of Active Directory OU to create new AD groups</td></tr>
+  <tr><td>GoogleClientId</td><td>234234234-rp1ein8ov06sa39oind1n97ikp7nhnggd.apps.googleusercontent.com</td><td>API Client Id</td></tr>
+  <tr><td>GoogleClientSecret</td><td>a4VHs9UAFUWPjqeDdzpz6GtE</td><td>API Client Id</td></tr>
+  <tr><td>GoogleRedirectUri</td><td>http://localhost/oauth2callback</td><td>API Redirect Uri</td></tr>
+  <tr><td>GoogleClientId</td><td>1//06NtAZwSV9F7lCgYIARAAGAYSNwF-L9Iri46v1OUghMEAjMbHCLoRorMgpQEjfuDoqXOFbWcfdsM3hmh76ahF3PQyHXatdIKwxlo</td><td>API Refresh Token</td></tr>
 </table>
 
 ## Manual resources
 This Delegated Form uses the following resources in order to run
 
-### Powershell data source 'AD-user-generate-table-groupmanagers'
-This Powershell data source runs an Active Directory query to search for "manager" AD user accounts. It uses an array of Active Directory OU's specified as HelloID user defined variable named _"ADusersSearchOU"_ to specify the search scope. It uses an optional input called _"selectedGroup"_ to default select the current group manager in the returned data
-
-### Powershell data source 'AD-group-create-check-names'
-This Powershell data source runs an Active Directory query to return the available group name and email address based on the configured naming convention.  
-
-### Delegated form task 'AD-group-create'
-This delegated form task will create the configured new AD group.
+### Delegated form task 'google-group-create'
+This delegated form task will create the configured new google group.
