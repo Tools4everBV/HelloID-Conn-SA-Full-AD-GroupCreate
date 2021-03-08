@@ -1,0 +1,26 @@
+[
+    {
+        "name":  "description",
+        "value":  "{{form.description}}"
+    },
+    {
+        "name":  "email",
+        "value":  "{{form.naming.email}}"
+    },
+    {
+        "name":  "groupScope",
+        "value":  "{{form.groupScope}}"
+    },
+    {
+        "name":  "groupType",
+        "value":  "{{form.groupType}}"
+    },
+    {
+        "name":  "manager",
+        "value":  "{{form.manager.UserPrincipalName}}"
+    },
+    {
+        "name":  "name",
+        "value":  "{{form.naming.name}}"
+    }
+]
