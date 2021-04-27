@@ -48,3 +48,5 @@ This Powershell data source runs an Active Directory query to return the availab
 ### Delegated form task 'AD-group-create'
 This delegated form task will create the configured new AD group.
 
+# HelloID Docs
+The official HelloID documentation can be found at: https://docs.helloid.com/
