@@ -6,7 +6,14 @@ This HelloID Service Automation Delegated Form provides AD group creation functi
  3. Select the manager (AD user account) of the new group
  4. Available group name and emailaddress ar show based on configured naming convention and a lookup in Active Directory
  5. New AD group is created after confirmation
- 
+
+
+## Versioning
+| Version | Description | Date |
+| - | - | - |
+| 1.0.1   | Added version number and updated all-in-one script | 2021/11/03  |
+| 1.0.0   | Initial release | 2020/09/07  |
+
 <!-- TABLE OF CONTENTS -->
 ## Table of Contents
 * [Description](#description)
@@ -14,6 +21,7 @@ This HelloID Service Automation Delegated Form provides AD group creation functi
   * [Getting started](#getting-started)
 * [Post-setup configuration](#post-setup-configuration)
 * [Manual resources](#manual-resources)
+* [Getting help](#getting-help)
 
 
 ## All-in-one PowerShell setup script
@@ -48,5 +56,8 @@ This Powershell data source runs an Active Directory query to return the availab
 ### Delegated form task 'AD-group-create'
 This delegated form task will create the configured new AD group.
 
-# HelloID Docs
+## Getting help
+_If you need help, feel free to ask questions on our [forum](https://forum.helloid.com/forum/helloid-connectors/service-automation/510-helloid-sa-active-directory-ad-group-create)_
+
+## HelloID Docs
 The official HelloID documentation can be found at: https://docs.helloid.com/
